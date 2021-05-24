@@ -1,0 +1,39 @@
+useDotenv: true
+
+service: serverless-lambda-tutorial
+app: serverless-lambda-tutorial
+org: pseigers
+
+frameworkVersion: '2'
+custom:
+  Bucket: pep-serverless-image-resize
+
+provider:
+  name: aws
+  runtime: nodejs12.x
+  lambdaHashingVersion: 20201221
+  region: eu-west-1
+  iam:
+    role:
+      statements:
+        - Effect: "Allow"
+          Action:
+            - "s3:PutObject"
+          Resource:
+            - "arn:aws:s3:::${self:custom.Bucket}/*"
+functions:
+  hello:
+    handler: handler.upload
+    environment:
+      BUCKET: pep-serverless-image-resize
+    events:
+     - httpApi:
+         path: /upload
+         method: post
+resources: # CloudFormation template syntax from here on.
+  Resources:
+    S3Bucket:
+      Type: 'AWS::S3::Bucket'
+      DeletionPolicy: Retain
+      Properties:
+        BucketName: ${env:BUCKET} 
